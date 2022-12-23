@@ -5,13 +5,15 @@ import { RemindingButton, RemindingButtonMaker as RemindingButtonSource } from "
 import RemindingElement from "./remindingElement";
 import SlackActionWrapper from "./slackActionWrapper";
 import { sleep, sleepSeconds } from "./util";
+import config from "./config.json";
+import { getLogger } from "log4js";
 
 
 const hourSeconds = 60 * 60;
 
 const buttonSources = [
     new RemindingButtonSource("5 seconds later", 5),
-    new RemindingButtonSource("30 seconds later", 30),
+    // new RemindingButtonSource("30 seconds later", 30),
     new RemindingButtonSource("1 hours later", hourSeconds),
     new RemindingButtonSource("3 hours later", 3 * hourSeconds),
     new RemindingButtonSource("12 hours later", 12 * hourSeconds),
@@ -30,7 +32,7 @@ class EasyReminder{
     ){}
 
     public async startProcess(){
-        const delayInterval = 1 // sec
+        const delayInterval = 5 // sec
         while (true){
             await sleepSeconds(delayInterval);
             
@@ -48,8 +50,12 @@ class EasyReminder{
         reminding.decLeftSeconds(passedSec);
         if (reminding.isPassedLeftSeconds() === false) return;
     
+        getLogger().log("start remind");
+
         const buttons = buttonSources.map(button => button.make(reminding.content)).map(getRemindButtonBlock);
         await this.slackAction.postBlockText(reminding.channelId, "remind: " + reminding.content, getReminderBlock(reminding, buttons));
+
+        getLogger().info(reminding);
     }
 
 
@@ -58,6 +64,8 @@ class EasyReminder{
         if (message.text === undefined) return;
         const newElement = new RemindingElement(message.text, message.user, message.channel, this.defaultRemindDelay);
         this.remindingList.push(newElement);
+
+        this.slackAction.addEmoji("love_letter", message.channel, message.ts);
     } 
 
     public subscribeAction(app: App){
@@ -78,12 +86,12 @@ class EasyReminder{
 
         const newElement = new RemindingElement(
             (e.action as ButtonAction).value,
-            body.message?.user ?? "(null)",
-            body.container.channelId,
+            body.user?.id ?? "(null)",
+            body.channel?.id ?? config.targetChannel,
             button.delayedSeconds);
         this.remindingList.push(newElement);
 
-        e.say("set remind: " + button.text + " for " + body.user.name);
+        e.say("setup reminder: " + button.text + " for " + body.user.name);
     }
 }
 
