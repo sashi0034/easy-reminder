@@ -25,7 +25,7 @@ export default
 class EasyReminder{
     private remindingList: RemindingElement[] = []
 
-    private readonly defaultRemindDelay = 6;
+    private readonly defaultRemindDelay = config.defaultRemindDelay;
 
     public constructor(
         private readonly slackAction: SlackActionWrapper
