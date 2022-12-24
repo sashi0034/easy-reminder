@@ -12,11 +12,12 @@ import { getLogger } from "log4js";
 const hourSeconds = 60 * 60;
 
 const buttonSources = [
-    new RemindingButtonSource("5 seconds later", 5),
+    // new RemindingButtonSource("5 seconds later", 5),
     // new RemindingButtonSource("30 seconds later", 30),
     new RemindingButtonSource("1 hours later", hourSeconds),
     new RemindingButtonSource("3 hours later", 3 * hourSeconds),
-    new RemindingButtonSource("12 hours later", 12 * hourSeconds),
+    new RemindingButtonSource("6 hours later", 6 * hourSeconds),
+    // new RemindingButtonSource("12 hours later", 12 * hourSeconds),
     new RemindingButtonSource("1 day later", 24 * hourSeconds),
     new RemindingButtonSource("1 week later", 7 * 24 * hourSeconds),
 ]
