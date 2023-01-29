@@ -22,6 +22,28 @@ const buttonSources = [
     new RemindingButtonSource("1 week later", 7 * 24 * hourSeconds),
 ]
 
+const literalCmdList = "!list";
+const literalCmdNow = "!now";
+
+
+function checkHeadText(source: string, finding: string){
+    if (source === "") return false;
+
+    const head = source.slice(0, finding.length);
+    return head === finding;
+}
+
+function removeHeadTextAndWhiteSpace(source: string, finding: string){
+    if (checkHeadText(source, finding) === false){
+        getLogger().warn("source does not include head");
+        return source;
+    }
+    const removedHead = source.slice(finding.length, source.length);
+    const removedSpace = removedHead.trim();
+    return removedSpace;
+}
+
+
 export default
 class EasyReminder{
     private remindingList: RemindingElement[] = []
@@ -60,14 +82,43 @@ class EasyReminder{
     }
 
 
+
     public onReceivedMessage(message: GenericMessageEvent){
         console.log(message)
         if (message.text === undefined) return;
-        const newElement = new RemindingElement(message.text, message.user, message.channel, this.defaultRemindDelay);
-        this.remindingList.push(newElement);
-
-        this.slackAction.addEmoji("love_letter", message.channel, message.ts);
+        if (message.text === null) return;
+        if (message.text === "") return;
+        
+        const text = message.text;
+        if (checkHeadText(text, literalCmdList) === true){
+            // remind listを表示
+            this.executeCmdList(message.channel, message.user);
+        }else if (checkHeadText(text, literalCmdNow) === true){
+            // すぐにremind
+            const newElement = new RemindingElement(removeHeadTextAndWhiteSpace(message.text, literalCmdNow), message.user, message.channel, 0);
+            this.updateRemindingElement(newElement, 1);
+        }
+        else {
+            // 通常
+            const newElement = new RemindingElement(message.text, message.user, message.channel, this.defaultRemindDelay);
+            this.remindingList.push(newElement);
+            this.slackAction.addEmoji("love_letter", message.channel, message.ts);
+        }
     } 
+
+    private async executeCmdList(channelId: string, userId: string){
+        let responseText = "";
+        for (const remind of this.remindingList) {
+            if (remind.channelId !== channelId) continue;
+            if (remind.userId !== userId) continue;
+
+            if (responseText !== "") responseText += "\n";
+            responseText += remind.content + ` (in ${remind.leftSec} seconds)`;
+        }
+
+        if (responseText === "") responseText = "Nothing to remind.";
+        await this.slackAction.postMessageAt(channelId, responseText);
+    }
 
     public subscribeAction(app: App){
         for (const button of buttonSources) {

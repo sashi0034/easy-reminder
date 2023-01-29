@@ -24,6 +24,18 @@ class SlackActionWrapper{
         return res;
     }
 
+    public async postMessageAt(channel: string, text: string){
+        const res = await this.app.client.chat.postMessage({
+            token: this.config.botToken,
+            channel: channel,
+            text: text,
+        })
+
+        if (!res.ok) console.error(res)
+
+        return res;
+    }
+
     public async updateMessage(timeStamp: string, text: string){
         const result = await this.app.client.chat.update({
             token: this.config.botToken,

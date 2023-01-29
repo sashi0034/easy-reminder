@@ -8,6 +8,10 @@ class RemindingElement{
         private leftSeconds: number
     ){}
 
+    public get leftSec() {
+        return this.leftSeconds;
+    }
+
     public decLeftSeconds(amount: number){
         this.leftSeconds -= amount;
     }
