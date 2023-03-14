@@ -22,7 +22,7 @@ export async function processBotRoutine(){
         console.log(event)
         const messageEvent: GenericMessageEvent = event as GenericMessageEvent
         if (messageEvent.subtype!==undefined && messageEvent.subtype==="message_changed") return;
-        if (messageEvent.subtype==="bot_message") return;
+        // if (messageEvent.subtype==="bot_message") return;
         reminder.onReceivedMessage(messageEvent);
     });
 

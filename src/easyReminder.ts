@@ -55,10 +55,21 @@ class EasyReminder{
     ){}
 
     public async startProcess(){
-        const delayInterval = 5 // sec
         while (true){
+            try{
+                await this.processAsync();
+            }
+            catch (e){
+                getLogger().error(e);
+            }
+        }
+    }
+
+    private async processAsync() {
+        const delayInterval = 5; // sec
+        while (true) {
             await sleepSeconds(delayInterval);
-            
+
             // リマインド要素を更新
             for (const element of this.remindingList) {
                 await this.updateRemindingElement(element, delayInterval);
